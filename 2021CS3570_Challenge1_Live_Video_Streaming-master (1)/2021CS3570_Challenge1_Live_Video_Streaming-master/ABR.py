@@ -53,17 +53,17 @@ class Algorithm:
          
          for i in range(4):
              self.R[i].append(Bitrate[i]/self.current_bitrate * actual_rate)  #formula 2
+
          for i in range(4):
              if(len(self.R_hat[i]) == 0):
                  self.R_hat[i].append(self.R[i][-1])
+                 
          if(data_size != 0 and self.n > 5) :
-             
-             #print("dd")
+
              self.SC_fast = 2/ (1 + 2) #formula 4
              self.SC_slow = 2/ (1 + 3) #formula 5
 
              for i in range(4):
-                 #print(len(self.R_hat[i]), self.n)
 
                  self.ER_value = self.ER(self.R[i], self.n, 5) #formula 6
 
@@ -76,7 +76,7 @@ class Algorithm:
                  self.R_hat[i].append(self.R[i][-1])
 
          self.n = self.n +1
-         #print(self.R_hat[0][-1], self.R_hat[1][-1])
+
          return 
     
      #formula 8 9
@@ -145,7 +145,7 @@ class Algorithm:
              if(next_buffer_size > threhold):
                  tmp_cdn.append(D)
          #print(tmp_cdn)
-         if(len(tmp_cdn) != 0): idx = D_cdn.index(min(tmp_cdn))
+         if(len(tmp_cdn) != 0): idx = D_cdn.index(max(tmp_cdn))
          else: idx = 0
 
          return idx
