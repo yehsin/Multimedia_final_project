@@ -83,14 +83,15 @@ class Algorithm:
      def network_throughput(self,time_interval,data,n):
          init = 0.0
          sum = 0.0
-         for i in range(n):
+         for i in range(1, n+1):
              init = init + i
          weight = 1.0 / init
          #print(weight)
          for j in range(n):
              #print(data[j])
-             sum = sum + (data[j] / time_interval[j]) * weight * j
-         total = n * (n+1) / 2.0
+             if(time_interval[j] == 0): continue
+             else : sum = sum + (data[j] / time_interval[j]) * weight * (j+1)
+         #total = n * (n+1) / 2.0
          #print(sum)
          return sum
 
@@ -107,7 +108,7 @@ class Algorithm:
          bitrates = []
          D_cdn = []
          tmp_cdn = []
-         threhold = buffer_size
+         threhold = self.B_min_0
 
          for i in range(len(Bitrate)):
 
@@ -128,7 +129,8 @@ class Algorithm:
              if(next_buffer_size > threhold):
                  tmp_cdn.append(D)
          #print(tmp_cdn)
-         idx = D_cdn.index(min(tmp_cdn))
+         if(len(tmp_cdn) != 0): idx = D_cdn.index(min(tmp_cdn))
+         else: idx = 0
 
          return idx
 
@@ -175,7 +177,7 @@ class Algorithm:
 
             self.Seg_Bit_Pre(S_send_data_size[-1], S_time_interval[-1])
 
-            bit_rate = self.Bitrate_control(r=self.R_hat[-1], d=S_chunk_len[-1], data=S_send_data_size,time_interval = S_time_interval ,slice=5, buffer_size=S_buffer_size[-1], cdn_idx=cdn_newest_id, dld=download_id, time=download_time)
+            bit_rate = self.Bitrate_control(r=self.R_hat[-1], d=S_chunk_len[-1], data=S_send_data_size,time_interval = S_time_interval ,slice=20, buffer_size=S_buffer_size[-1], cdn_idx=cdn_newest_id, dld=download_id, time=download_time)
 
          self.last_cdn_idx = cdn_newest_id
          
