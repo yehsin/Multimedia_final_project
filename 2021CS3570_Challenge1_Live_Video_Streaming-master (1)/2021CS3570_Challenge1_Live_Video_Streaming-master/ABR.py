@@ -8,6 +8,7 @@ class Algorithm:
      def __init__(self):
      # fill your self params
         self.some_param = 0
+        self.history_bitrate = []
         self.R = [0.0]
         self.R_hat = [1.0]
         self.V_rate = 1.5
@@ -38,9 +39,10 @@ class Algorithm:
      def ER(self, R, n ,N = 5):
          sum = 0.0
          for i in range(N-1):
+             m = Bitrate[self.history_bitrate[-1 + i]] / self.current_bitrate
              #print(sum)
-             sum = sum + abs(R[n-i] - R[n-i-1])
-         ERn = abs(R[n] - R[n-N]) / sum
+             sum = sum + abs(R[n-i] * m - R[n-i-1] * m)
+         ERn = abs(R[n] * m - R[n-N] * m) / sum
          return ERn
 
      # Segment Bitrate Prediction
@@ -52,7 +54,7 @@ class Algorithm:
          
 
          if(data_size != 0 and self.n > 5) :
-             self.ER_value = self.ER(self.R,self.n,5) #formula 6
+             self.ER_value = self.ER(self.R, self.n, 5) #formula 6
             
 
              self.SC_fast = 2/ (1 + 2) #formula 4
@@ -61,6 +63,7 @@ class Algorithm:
              self.SC = math.pow((self.ER_value * (self.SC_fast - self.SC_slow) + self.SC_slow),2) #formula 7
             
              self.R_hat.append((1-self.SC)*self.R_hat[self.n]  + self.SC * self.R[self.n]) #formual 3
+
              self.n = self.n +1
          return 
     
@@ -182,6 +185,8 @@ class Algorithm:
          self.last_cdn_idx = cdn_newest_id
          
          self.current_bitrate = Bitrate[bit_rate]
+
+         self.history_bitrate.append(bit_rate)
 
          #print(self.current_bitrate)
          #print(bit_rate, new_bitrate)
