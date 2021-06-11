@@ -2,7 +2,7 @@
 #NN_MODEL = "./submit/results/nn_model_ep_18200.ckpt" # model path settings, if using ML-based method
 import math
 
-Bitrate = [500.0,850.0,1200.0,1850.0]
+Bitrate = [500.0 * 1024.0 ,850.0 * 1024.0 ,1200.0 * 1024.0, 1850.0 * 1024.0]
 
 class Algorithm:
      def __init__(self):
@@ -17,7 +17,7 @@ class Algorithm:
         self.SC_slow = 1.0
         self.SC_fast = 1.0
         self.ema_value = []
-        self.current_bitrate = 500.0
+        self.current_bitrate = 500.0 * 1024.0
         self.predict_time = []
         self.last_cdn_idx = 0
         
@@ -46,17 +46,17 @@ class Algorithm:
      # Segment Bitrate Prediction
      def Seg_Bit_Pre(self, data_size, time_interval):
          
-         actual_rate = data_size / time_interval
+         actual_rate = data_size / 0.04
          #print(actual_rate / 1024.0)
-         self.R.append(self.V_rate * actual_rate/1024.0) #formula 2
+         self.R.append(self.V_rate * actual_rate) #formula 2
          
 
          if(data_size != 0 and self.n > 5) :
              self.ER_value = self.ER(self.R,self.n,5) #formula 6
             
 
-             self.SC_fast = 2/ (1 + 5) #formula 4
-             self.SC_slow = 2/ (1 + 50) #formula 5
+             self.SC_fast = 2/ (1 + 2) #formula 4
+             self.SC_slow = 2/ (1 + 3) #formula 5
 
              self.SC = math.pow((self.ER_value * (self.SC_fast - self.SC_slow) + self.SC_slow),2) #formula 7
             
@@ -113,15 +113,15 @@ class Algorithm:
 
              bitrates.append(self.R_hat[-1] * self.current_bitrate / Bitrate[i])
 
-             predict_time = self.downloading_time(bitrates[-1],d,time_interval[-slice:],data[-slice:],slice)
+             predict_time = self.downloading_time(bitrates[-1],d,time_interval[-slice:],data[-slice:],slice) #10
          
-             next_buffer_size = max(buffer_size + d - predict_time * self.Gamma, 0)
+             next_buffer_size = max(buffer_size + d - predict_time * self.Gamma, 0) #11
 
-             next_V = self.predict_V(beta = 1.0, cdn_idx = cdn_idx, d=d, cur_predict_time = time)
+             next_V = self.predict_V(beta = 1.0, cdn_idx = cdn_idx, d=d, cur_predict_time = time) #12
          
-             Distance = max((cdn_idx - dld) * d + next_V * predict_time - d, 0 )
+             Distance = max((cdn_idx - dld) * d + next_V * predict_time - d, 0 ) #13
 
-             D = next_buffer_size + Distance
+             D = next_buffer_size + Distance #14
 
              D_cdn.append(D)
 
