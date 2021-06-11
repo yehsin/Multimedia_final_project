@@ -9,8 +9,8 @@ class Algorithm:
      # fill your self params
         self.some_param = 0
         self.history_bitrate = []
-        self.R = [0.0]
-        self.R_hat = [1.0]
+        self.R = [[],[],[],[]]
+        self.R_hat =[[500.0 * 1024.0],[500.0 *1024.0],[500.0*+1024.0],[500.0*1024.0]]
         self.V_rate = 1.5
         self.n = 0
         self.ER_value = 1.0
@@ -39,32 +39,44 @@ class Algorithm:
      def ER(self, R, n ,N = 5):
          sum = 0.0
          for i in range(N-1):
-             m = Bitrate[self.history_bitrate[-1 + i]] / self.current_bitrate
-             #print(sum)
-             sum = sum + abs(R[n-i] * m - R[n-i-1] * m)
-         ERn = abs(R[n] * m - R[n-N] * m) / sum
+             #print(len(R))
+             sum = sum + abs(R[n-i] - R[n-i-1])
+         ERn = abs(R[n] - R[n-N]) / sum
          return ERn
 
      # Segment Bitrate Prediction
      def Seg_Bit_Pre(self, data_size, time_interval):
          
          actual_rate = data_size / 0.04
+         #print(actual_rate)
          #print(actual_rate / 1024.0)
-         self.R.append(self.V_rate * actual_rate) #formula 2
          
-
+         for i in range(4):
+             self.R[i].append(Bitrate[i]/self.current_bitrate * actual_rate)  #formula 2
+         for i in range(4):
+             if(len(self.R_hat[i]) == 0):
+                 self.R_hat[i].append(self.R[i][-1])
          if(data_size != 0 and self.n > 5) :
-             self.ER_value = self.ER(self.R, self.n, 5) #formula 6
-            
-
+             
+             #print("dd")
              self.SC_fast = 2/ (1 + 2) #formula 4
              self.SC_slow = 2/ (1 + 3) #formula 5
 
-             self.SC = math.pow((self.ER_value * (self.SC_fast - self.SC_slow) + self.SC_slow),2) #formula 7
-            
-             self.R_hat.append((1-self.SC)*self.R_hat[self.n]  + self.SC * self.R[self.n]) #formual 3
+             for i in range(4):
+                 #print(len(self.R_hat[i]), self.n)
 
-             self.n = self.n +1
+                 self.ER_value = self.ER(self.R[i], self.n, 5) #formula 6
+
+                 self.SC = math.pow((self.ER_value * (self.SC_fast - self.SC_slow) + self.SC_slow),2) #formula 7
+
+                 self.R_hat[i].append((1-self.SC)*self.R_hat[i][self.n]  + self.SC * self.R[i][self.n]) #formual 3
+         else :
+             print(data_size, actual_rate)
+             for i in range(4):
+                 self.R_hat[i].append(self.R[i][-1])
+
+         self.n = self.n +1
+         #print(self.R_hat[0][-1], self.R_hat[1][-1])
          return 
     
      #formula 8 9
@@ -75,6 +87,7 @@ class Algorithm:
              target = 1
          else:
              target = 0
+
          if(Buffer_size >= 0 and Buffer_size < self.B_min_0):
              Gamma = 0.95
          elif(Buffer_size >= self.B_min_1 and Buffer_size < self.B_max_0):
@@ -115,9 +128,9 @@ class Algorithm:
 
          for i in range(len(Bitrate)):
 
-             bitrates.append(self.R_hat[-1] * self.current_bitrate / Bitrate[i])
+             bitrates.append(self.R_hat[i][-1])
 
-             predict_time = self.downloading_time(bitrates[-1],d,time_interval[-slice:],data[-slice:],slice) #10
+             predict_time = self.downloading_time(bitrates[i],d,time_interval[-slice:],data[-slice:],slice) #10
          
              next_buffer_size = max(buffer_size + d - predict_time * self.Gamma, 0) #11
 
