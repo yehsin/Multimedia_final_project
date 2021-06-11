@@ -57,7 +57,7 @@ class Algorithm:
          for i in range(4):
              if(len(self.R_hat[i]) == 0):
                  self.R_hat[i].append(self.R[i][-1])
-                 
+
          if(data_size != 0 and self.n > 5) :
 
              self.SC_fast = 2/ (1 + 2) #formula 4
@@ -201,6 +201,13 @@ class Algorithm:
 
          self.history_bitrate.append(bit_rate)
 
+         #formula 19
+         print(S_end_delay[-1])
+         if(S_end_delay[-1] <= 1.0 ):
+             latency_limit = (0.001 * Bitrate[bit_rate] / 1024.0 + 0.5) * 0.04 / 0.005
+         else :
+             latency_limit = (0.001 * Bitrate[bit_rate] / 1024.0 + 0.5) * 0.04 / 0.01 
+         #print(latency_limit)
          #print(self.current_bitrate)
          #print(bit_rate, new_bitrate)
 
